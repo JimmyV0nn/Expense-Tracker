@@ -8,10 +8,9 @@ month. Admins can manage user accounts and view activity history.
 
 ## Tech
 
-- Frontend: React + Vite + TypeScript + Tailwind
-- Backend: FastAPI + SQLAlchemy
-- Database: SQLite (the file lives at `backend/expense_tracker.db` after seeding)
-- Auth: JWT + bcrypt
+The frontend is built with React, Vite, TypeScript and Tailwind. The backend
+uses FastAPI with SQLAlchemy on top of SQLite (the db file lives at
+`backend/expense_tracker.db` after seeding). Auth is done with JWT and bcrypt.
 
 ## How to run
 
@@ -41,10 +40,8 @@ npm run dev
 
 Open http://localhost:5173.
 
-After running the seed script you can log in with:
-
-- admin / admin123 (admin account)
-- demo / demo1234 (normal user)
+After running the seed script you can log in with `admin / admin123` (admin) or
+`demo / demo1234` (normal user).
 
 ## Files
 
@@ -68,6 +65,6 @@ frontend/
 
 ## Notes
 
-- The DB file is gitignored. Run `python -m app.seed` to recreate it.
-- If you want to use MySQL instead of SQLite, change `DATABASE_URL` in
-  `backend/.env` and install the corresponding driver.
+The db file is gitignored, run `python -m app.seed` to recreate it. If you want
+to use MySQL instead of SQLite, change `DATABASE_URL` in `backend/.env` and
+install the corresponding driver.
