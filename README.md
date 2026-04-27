@@ -1,39 +1,21 @@
 # Expense Tracker
 
-Web app that lets users record and review their daily spending.
+Internet Programming - Assignment 2.
 
-Stack: React + Vite + TypeScript + Tailwind on the frontend; FastAPI + SQLAlchemy +
-SQLite on the backend; JWT for auth.
+A simple web app for tracking personal expenses. Users can sign up, add their
+expense items, search/filter them, and see a basic summary by category and
+month. Admins can manage user accounts and view activity history.
 
-## Project layout
+## Tech
 
-```
-backend/
-  app/
-    core/       security and auth dependencies
-    models/     SQLAlchemy models
-    routers/    API endpoints
-    schemas/    Pydantic schemas
-    config.py
-    database.py
-    main.py
-    seed.py
-  requirements.txt
-  .env.example
-frontend/
-  src/
-    api/        axios client
-    components/ Layout, Navbar, ProtectedRoute
-    pages/      Login, Register, Dashboard, Expenses, Analytics, Admin
-    stores/     auth store
-    types/
-    App.tsx
-    main.tsx
-  index.html
-  package.json
-```
+- Frontend: React + Vite + TypeScript + Tailwind
+- Backend: FastAPI + SQLAlchemy
+- Database: SQLite (the file lives at `backend/expense_tracker.db` after seeding)
+- Auth: JWT + bcrypt
 
-## Run
+## How to run
+
+You need Python 3.11+ and Node.js 18+.
 
 Backend:
 
@@ -44,12 +26,12 @@ python -m venv .venv
 pip install -r requirements.txt
 copy .env.example .env
 python -m app.seed
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload
 ```
 
-API docs at http://localhost:8000/docs.
+The API runs on http://localhost:8000 (Swagger UI at /docs).
 
-Frontend:
+Frontend (in another terminal):
 
 ```
 cd frontend
@@ -57,18 +39,35 @@ npm install
 npm run dev
 ```
 
-App at http://localhost:5173. Vite proxies `/api/*` to the backend on port 8000.
+Open http://localhost:5173.
 
-Default accounts after seeding: `admin / admin123` and `demo / demo1234`.
+After running the seed script you can log in with:
 
-## Switching the database
+- admin / admin123 (admin account)
+- demo / demo1234 (normal user)
 
-Set `DATABASE_URL` in `backend/.env`. Examples:
+## Files
 
 ```
-DATABASE_URL=mysql+pymysql://user:pass@localhost:3306/expense_tracker
-DATABASE_URL=postgresql+psycopg2://user:pass@localhost:5432/expense_tracker
+backend/
+  app/
+    core/       password hashing, JWT, auth dependencies
+    models/     database tables
+    routers/    api endpoints
+    schemas/    request/response shapes
+    main.py     app entry point
+    seed.py     creates the two default users
+frontend/
+  src/
+    api/        axios client
+    components/ shared layout / navbar / route guard
+    pages/      Login, Register, Dashboard, Expenses, Analytics, Admin
+    stores/     auth state (zustand)
+  index.html
 ```
 
-For non-SQLite databases, change the monthly summary expression from
-`strftime('%Y-%m', spent_on)` to the equivalent in your database.
+## Notes
+
+- The DB file is gitignored. Run `python -m app.seed` to recreate it.
+- If you want to use MySQL instead of SQLite, change `DATABASE_URL` in
+  `backend/.env` and install the corresponding driver.
