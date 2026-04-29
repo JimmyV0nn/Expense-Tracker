@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/api/admin/users", tags=["admin-users"])
-=======
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -12,7 +7,7 @@ from ..models import User
 from ..schemas.user import UserOut, UserUpdate
 
 
-router = APIRouter(prefix="/api/users", tags=["admin-users"])
+router = APIRouter(prefix="/api/admin/users", tags=["admin-users"])
 
 
 @router.get("/", response_model=list[UserOut])
@@ -46,12 +41,8 @@ def update_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Only update fields that were actually sent — exclude_unset means a
-    # client sending {"email": "x@y.com"} won't accidentally reset is_admin.
     updates = payload.model_dump(exclude_unset=True)
 
-    # Enforce uniqueness for username and email changes without relying on the
-    # database error, so we can return a friendly message instead of a 500.
     if "username" in updates and updates["username"] != user.username:
         if db.query(User).filter(User.username == updates["username"]).first():
             raise HTTPException(status_code=400, detail="Username already taken")
@@ -78,8 +69,6 @@ def delete_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Prevent an admin from deleting their own account — losing all admin
-    # access mid-session would be very hard to recover from.
     if user.id == admin.id:
         raise HTTPException(
             status_code=400,
@@ -88,4 +77,3 @@ def delete_user(
 
     db.delete(user)
     db.commit()
->>>>>>> feature/user-activity

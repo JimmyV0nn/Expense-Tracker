@@ -11,8 +11,6 @@ class ActivityCreate(BaseModel):
 
 
 class ActivityResponse(BaseModel):
-    # from_attributes=True lets Pydantic read directly off a SQLAlchemy ORM
-    # object instead of requiring a plain dict.
     model_config = ConfigDict(from_attributes=True)
 
     id: int

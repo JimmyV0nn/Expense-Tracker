@@ -1,26 +1,17 @@
-<<<<<<< HEAD
-export default function Admin() {
-  return (
-    <div className="card">
-      <h1 className="text-xl font-semibold">Admin</h1>
-=======
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { api } from "../api/client";
 import { useAuthStore } from "../stores/auth";
 import type { Activity, ActivityQuery, User, UserUpdateRequest } from "../types";
 
-// ─── tiny helpers ──────────────────────────────────────────────────────────
 
 function fmt(iso: string) {
-  // toLocaleString gives us a readable local time without pulling in a date library.
   return new Date(iso).toLocaleString(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
   });
 }
 
-// ─── skeleton row ──────────────────────────────────────────────────────────
 
 function SkeletonRows({ cols, rows = 5 }: { cols: number; rows?: number }) {
   return (
@@ -38,7 +29,6 @@ function SkeletonRows({ cols, rows = 5 }: { cols: number; rows?: number }) {
   );
 }
 
-// ─── confirm-delete dialog ─────────────────────────────────────────────────
 
 interface ConfirmDialogProps {
   username: string;
@@ -48,8 +38,6 @@ interface ConfirmDialogProps {
 
 function ConfirmDialog({ username, onConfirm, onCancel }: ConfirmDialogProps) {
   return (
-    // Clicking the dark backdrop also cancels — saves the user a click if
-    // they accidentally opened the dialog.
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
       onClick={onCancel}
@@ -76,23 +64,20 @@ function ConfirmDialog({ username, onConfirm, onCancel }: ConfirmDialogProps) {
   );
 }
 
-// ─── tab: user management ──────────────────────────────────────────────────
 
 function UsersTab() {
   const currentUser = useAuthStore((s) => s.user);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Tracks which user row is mid-request so we can disable its buttons.
   const [mutatingId, setMutatingId] = useState<number | null>(null);
-  // When non-null, the confirm dialog is open for this user.
   const [pendingDelete, setPendingDelete] = useState<User | null>(null);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.get<User[]>("/users/");
+      const { data } = await api.get<User[]>("/admin/users/");
       setUsers(data);
     } catch (err: any) {
       setError(err.response?.data?.detail ?? "Failed to load users");
@@ -108,9 +93,8 @@ function UsersTab() {
   async function patch(userId: number, update: UserUpdateRequest, successMsg: string) {
     setMutatingId(userId);
     try {
-      await api.patch(`/users/${userId}`, update);
+      await api.patch(`/admin/users/${userId}`, update);
       toast.success(successMsg);
-      // Re-fetch the full list so every column reflects the latest DB state.
       await fetchUsers();
     } catch (err: any) {
       toast.error(err.response?.data?.detail ?? "Action failed");
@@ -123,7 +107,7 @@ function UsersTab() {
     setMutatingId(user.id);
     setPendingDelete(null);
     try {
-      await api.delete(`/users/${user.id}`);
+      await api.delete(`/admin/users/${user.id}`);
       toast.success(`${user.username} deleted`);
       await fetchUsers();
     } catch (err: any) {
@@ -144,15 +128,12 @@ function UsersTab() {
       )}
 
       <div className="mb-4 flex justify-end">
-        {/* Manual refresh for cases where users were added outside this page
-            (e.g. via the register endpoint) — the list only auto-updates
-            after actions taken within the tab itself. */}
         <button
           className="btn-ghost"
           onClick={fetchUsers}
           disabled={loading}
         >
-          {loading ? "Refreshing…" : "Refresh"}
+          {loading ? "Refreshing..." : "Refresh"}
         </button>
       </div>
 
@@ -196,7 +177,6 @@ function UsersTab() {
 
                     <td className="px-4 py-3">
                       {u.is_admin ? (
-                        // Black badge makes admin accounts visually distinct at a glance.
                         <span className="badge bg-slate-900 text-white">Admin</span>
                       ) : (
                         <span className="badge">User</span>
@@ -214,9 +194,6 @@ function UsersTab() {
                     <td className="px-4 py-3 text-slate-500">{fmt(u.created_at)}</td>
 
                     <td className="px-4 py-3">
-                      {/* Hide all action buttons on the admin's own row.
-                          The backend enforces this too, but hiding them here
-                          prevents confusing UX where buttons exist but always error. */}
                       {isSelf ? (
                         <span className="text-xs text-slate-400 italic">you</span>
                       ) : (
@@ -274,9 +251,7 @@ function UsersTab() {
   );
 }
 
-// ─── tab: activity log ─────────────────────────────────────────────────────
 
-// Badge colours for the three action types.
 const ACTION_BADGE: Record<string, string> = {
   register: "bg-blue-100 text-blue-700",
   login: "bg-slate-100 text-slate-700",
@@ -288,9 +263,6 @@ function ActivitiesTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // emailInput is what's typed in the box; appliedEmail is what we last fetched with.
-  // Keeping them separate means the filter only fires when the user explicitly hits
-  // Filter/Enter, not on every keystroke.
   const [emailInput, setEmailInput] = useState("");
   const [appliedEmail, setAppliedEmail] = useState("");
   const [actionFilter, setActionFilter] = useState("");
@@ -301,15 +273,13 @@ function ActivitiesTab() {
       setLoading(true);
       setError(null);
       try {
-        // axios serialises the params object into a query string automatically,
-        // and skips keys whose value is undefined/empty string.
         const params: Record<string, string | number> = {};
         if (query.user_email) params.user_email = query.user_email;
         if (query.action) params.action = query.action;
         if (query.skip !== undefined) params.skip = query.skip;
         if (query.limit !== undefined) params.limit = query.limit;
 
-        const { data } = await api.get<Activity[]>("/activities/", { params });
+        const { data } = await api.get<Activity[]>("/admin/activities/", { params });
         setActivities(data);
       } catch (err: any) {
         setError(err.response?.data?.detail ?? "Failed to load activities");
@@ -320,7 +290,6 @@ function ActivitiesTab() {
     []
   );
 
-  // Load with no filters on first render.
   useEffect(() => {
     fetchActivities();
   }, [fetchActivities]);
@@ -345,7 +314,6 @@ function ActivitiesTab() {
 
   return (
     <div className="space-y-4">
-      {/* ── filter bar ── */}
       <div className="flex flex-wrap items-end gap-2">
         <div className="flex-1 min-w-[200px]">
           <label className="label">User email</label>
@@ -355,7 +323,6 @@ function ActivitiesTab() {
             placeholder="alice@example.com"
             value={emailInput}
             onChange={(e) => setEmailInput(e.target.value)}
-            // Pressing Enter is a natural shortcut — users expect this to submit.
             onKeyDown={(e) => e.key === "Enter" && applyFilter()}
           />
         </div>
@@ -378,8 +345,6 @@ function ActivitiesTab() {
           Filter
         </button>
 
-        {/* Only show Clear when a filter is actually active so the bar
-            isn't cluttered when there's nothing to clear. */}
         {hasActiveFilter && (
           <button className="btn-ghost" onClick={clearFilter}>
             Clear
@@ -391,7 +356,6 @@ function ActivitiesTab() {
         <p className="rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>
       )}
 
-      {/* ── activity table ── */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
@@ -434,7 +398,6 @@ function ActivitiesTab() {
   );
 }
 
-// ─── page root ─────────────────────────────────────────────────────────────
 
 type Tab = "users" | "activities";
 
@@ -453,7 +416,6 @@ export default function Admin() {
       <h1 className="text-xl font-semibold text-slate-800">Admin</h1>
 
       <div className="card p-0 overflow-hidden">
-        {/* Tab strip */}
         <div className="flex border-b border-slate-200 px-2">
           <button className={tabClass("users")} onClick={() => setTab("users")}>
             User Management
@@ -463,8 +425,6 @@ export default function Admin() {
           </button>
         </div>
 
-        {/* Tab content — both tabs stay mounted so switching back doesn't
-            re-fetch unless an action was taken. */}
         <div className={`p-5 ${tab === "users" ? "" : "hidden"}`}>
           <UsersTab />
         </div>
@@ -472,7 +432,6 @@ export default function Admin() {
           <ActivitiesTab />
         </div>
       </div>
->>>>>>> feature/user-activity
     </div>
   );
 }

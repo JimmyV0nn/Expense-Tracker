@@ -26,10 +26,7 @@ class UserOut(BaseModel):
 
 
 class UserUpdate(BaseModel):
-<<<<<<< HEAD
-=======
     username: str | None = Field(default=None, min_length=3, max_length=50)
->>>>>>> feature/user-activity
     email: EmailStr | None = None
     is_active: bool | None = None
     is_admin: bool | None = None
