@@ -35,3 +35,34 @@ export interface ActivityQuery {
   skip?: number;
   limit?: number;
 }
+
+export interface Expense {
+  id: number;
+  user_id: number;
+  title: string;
+  category: string;
+  amount: number;
+  spent_on: string;
+  description: string;
+  created_at: string;
+}
+
+export interface ExpensePayload {
+  title: string;
+  category: string;
+  amount: number;
+  spent_on: string;
+  description?: string;
+}
+
+export interface CategorySummary {
+  category: string;
+  total: number;
+  count: number;
+}
+
+export interface MonthlySummary {
+  month: string;
+  total: number;
+  count: number;
+}
