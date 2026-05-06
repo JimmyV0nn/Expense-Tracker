@@ -28,9 +28,10 @@ python -m app.seed
 uvicorn app.main:app --reload
 ```
 
-The API runs on http://localhost:8000 (Swagger UI at /docs).
-
-Frontend (in another terminal):
+The API runs on http://localhost:8000. You don't open this in the browser
+directly (it's just an API server, the only thing it serves at the root is
+a redirect to the Swagger UI at /docs). Keep this terminal running and start
+the frontend in another terminal:
 
 ```
 cd frontend
@@ -38,7 +39,8 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173.
+Now open http://localhost:5173 in the browser. That's the actual app. Vite
+will proxy any `/api/*` requests to the backend automatically.
 
 After running the seed script you can log in with `admin / admin123` (admin) or
 `demo / demo1234` (normal user).
