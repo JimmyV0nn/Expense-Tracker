@@ -91,7 +91,7 @@ export default function Analytics() {
                   <XAxis dataKey="month" stroke="#64748b" fontSize={12} />
                   <YAxis stroke="#64748b" fontSize={12} />
                   <Tooltip formatter={(v: number) => `$${v.toFixed(2)}`} />
-                  <Bar dataKey="total" fill="#4f6df5" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="total" fill="#4f6df5" radius={[6, 6, 0, 0]} maxBarSize={60} />
                 </BarChart>
               </ResponsiveContainer>
             )}
