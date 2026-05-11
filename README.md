@@ -70,3 +70,31 @@ frontend/
 The db file is gitignored, run `python -m app.seed` to recreate it. If you want
 to use MySQL instead of SQLite, change `DATABASE_URL` in `backend/.env` and
 install the corresponding driver.
+
+## Troubleshooting
+
+**The backend complains about a missing column (e.g. `no such column: spent_on`)
+or some other database/schema error.**
+
+Your local `expense_tracker.db` was created against an older version of the
+models. SQLAlchemy's `create_all` only adds tables that don't exist yet, it
+doesn't migrate existing ones. After pulling a change that touches a model,
+delete the db and re-seed:
+
+```
+cd backend
+del expense_tracker.db          # macOS/Linux: rm expense_tracker.db
+python -m app.seed
+```
+
+**The frontend keeps redirecting to /login after pulling new changes.**
+
+The browser cached your old auth token in `localStorage`. Open DevTools,
+go to Application -> Local Storage -> http://localhost:5173, delete the
+`expense-tracker-auth` key, then refresh.
+
+**Port 8000 or 5173 is already in use.**
+
+A previous run didn't shut down cleanly. On Windows kill the orphan with
+`Get-Process python | Stop-Process` (or `Get-Process node | Stop-Process`
+for Vite), then start again.
