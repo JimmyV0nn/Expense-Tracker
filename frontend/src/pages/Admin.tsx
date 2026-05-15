@@ -12,7 +12,6 @@ function fmt(iso: string) {
   });
 }
 
-
 function SkeletonRows({ cols, rows = 5 }: { cols: number; rows?: number }) {
   return (
     <>
@@ -72,6 +71,9 @@ function UsersTab() {
   const [error, setError] = useState<string | null>(null);
   const [mutatingId, setMutatingId] = useState<number | null>(null);
   const [pendingDelete, setPendingDelete] = useState<User | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -89,6 +91,20 @@ function UsersTab() {
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  const filteredUsers = users.filter((u) => {
+    const matchSearch =
+      searchInput === "" ||
+      u.username.toLowerCase().includes(searchInput.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchInput.toLowerCase());
+    const matchRole =
+      roleFilter === "" ||
+      (roleFilter === "admin" && u.is_admin) ||
+      (roleFilter === "user" && !u.is_admin);
+    return matchSearch && matchRole;  
+  });
+      
+
 
   async function patch(userId: number, update: UserUpdateRequest, successMsg: string) {
     setMutatingId(userId);
@@ -127,15 +143,34 @@ function UsersTab() {
         />
       )}
 
-      <div className="mb-4 flex justify-end">
-        <button
-          className="btn-ghost"
-          onClick={fetchUsers}
-          disabled={loading}
-        >
-          {loading ? "Refreshing..." : "Refresh"}
-        </button>
-      </div>
+<div className="mb-4 flex flex-wrap items-end gap-2">
+  <div className="flex-1 min-w-[200px]">
+    <input
+      className="input"
+      placeholder="Search by username or email..."
+      value={searchInput}
+      onChange={(e) => setSearchInput(e.target.value)}
+    />
+  </div>
+  <div>
+    <select
+      className="input"
+      value={roleFilter}
+      onChange={(e) => setRoleFilter(e.target.value)}
+    >
+      <option value="">All roles</option>
+      <option value="admin">Admin</option>
+      <option value="user">User</option>
+    </select>
+  </div>
+  <button
+    className="btn-ghost"
+    onClick={fetchUsers}
+    disabled={loading}
+  >
+    {loading ? "Refreshing..." : "Refresh"}
+  </button>
+</div>
 
       {error && (
         <p className="mb-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">
@@ -158,14 +193,14 @@ function UsersTab() {
           <tbody>
             {loading ? (
               <SkeletonRows cols={6} />
-            ) : users.length === 0 ? (
+            ) : filteredUsers.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
                   No users found
                 </td>
               </tr>
             ) : (
-              users.map((u) => {
+              filteredUsers.map((u) => {
                 const isSelf = u.id === currentUser?.id;
                 const busy = mutatingId === u.id;
                 return (
