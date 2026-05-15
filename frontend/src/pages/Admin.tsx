@@ -6,7 +6,7 @@ import type { Activity, ActivityQuery, User, UserUpdateRequest } from "../types"
 
 
 function fmt(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
+  return new Date(iso + "Z").toLocaleString(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
   });
