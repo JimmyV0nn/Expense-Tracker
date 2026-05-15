@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-
+from sqlalchemy import or_
 from ..core.deps import require_admin
 from ..database import get_db
 from ..models import User
@@ -22,8 +22,13 @@ def list_activities(
 ):
     query = db.query(UserActivity)
 
-    if user_email:
-        query = query.filter(UserActivity.user_email == user_email)
+    if user_email: 
+       query = query.filter(
+           or_(
+               UserActivity.user_email.ilike(f"%{user_email}%"),
+               UserActivity.action.ilike(f"%{user_email}%"),
+           )
+       )
     if action:
         query = query.filter(UserActivity.action == action)
 

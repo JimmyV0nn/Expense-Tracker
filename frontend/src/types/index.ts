@@ -66,3 +66,9 @@ export interface MonthlySummary {
   total: number;
   count: number;
 }
+
+export interface CategoryMonthlySummary {
+  category: string;
+  month: string;
+  total: number;
+}

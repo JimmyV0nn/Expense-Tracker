@@ -8,6 +8,7 @@ from ..core.deps import get_current_user
 from ..database import get_db
 from ..models import Expense, User
 from ..schemas.expense import (
+    CategoryMonthlySummary,
     CategorySummary,
     ExpenseCreate,
     ExpenseOut,
@@ -115,7 +116,24 @@ def summary_by_month(
     )
     return [MonthlySummary(month=r[0], total=float(r[1]), count=int(r[2])) for r in rows]
 
-
+@router.get("/summary/by-category-month", response_model=list[CategoryMonthlySummary])
+def summary_by_category_month(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    month_expr = func.strftime("%Y-%m", Expense.spent_on)
+    rows = (
+        db.query(
+            Expense.category,
+            month_expr,
+            func.coalesce(func.sum(Expense.amount), 0.0),
+        )
+        .filter(Expense.user_id == current_user.id)
+        .group_by(Expense.category, month_expr)
+        .order_by(Expense.category, month_expr)
+        .all()
+    )
+    return [CategoryMonthlySummary(category=r[0], month=r[1], total=float(r[2])) for r in rows]
 @router.get("/{expense_id}", response_model=ExpenseOut)
 def get_expense(
     expense_id: int,

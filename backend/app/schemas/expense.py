@@ -42,3 +42,8 @@ class MonthlySummary(BaseModel):
     month: str
     total: float
     count: int
+
+class CategoryMonthlySummary(BaseModel):
+    category: str
+    month: str
+    total: float

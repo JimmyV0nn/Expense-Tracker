@@ -13,7 +13,7 @@ import {
   YAxis,
 } from "recharts";
 import { api } from "../api/client";
-import type { CategorySummary, MonthlySummary } from "../types";
+import type { CategoryMonthlySummary, CategorySummary, MonthlySummary } from "../types";
 
 
 const COLORS = [
@@ -26,12 +26,20 @@ const COLORS = [
   "#ec4899",
   "#0ea5e9",
 ];
+function weightedPrediction(months: number[]): number {
+  if (months.length === 0) return 0;
+  if (months.length === 1) return months[0];
 
+  const weights = months.map((_, i) => i + 1);
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  const weighted = months.reduce((sum, val, i) => sum + val * weights[i], 0);
+  return weighted / totalWeight;
+}
 
 export default function Analytics() {
   const [byCategory, setByCategory] = useState<CategorySummary[]>([]);
   const [byMonth, setByMonth] = useState<MonthlySummary[]>([]);
-
+  const [byCategoryMonth, setByCategoryMonth] = useState<CategoryMonthlySummary[]>([]);
   useEffect(() => {
     api
       .get<CategorySummary[]>("/expenses/summary/by-category")
@@ -39,8 +47,20 @@ export default function Analytics() {
     api
       .get<MonthlySummary[]>("/expenses/summary/by-month")
       .then(({ data }) => setByMonth(data));
+    api
+      .get<CategoryMonthlySummary[]>("/expenses/summary/by-category-month")
+      .then(({ data }) => setByCategoryMonth(data));
   }, []);
 
+    const predictions: Record<string, number> = {};
+    const categories = [...new Set(byCategoryMonth.map((r) => r.category))];
+    for (const cat of categories) {
+      const monthlyTotals = byCategoryMonth
+        .filter((r) => r.category === cat)
+        .sort((a, b) => a.month.localeCompare(b.month))
+        .map((r) => r.total);
+      predictions[cat] = weightedPrediction(monthlyTotals);
+    }
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold text-slate-800">Analytics</h1>
@@ -103,18 +123,24 @@ export default function Analytics() {
         <h2 className="text-base font-semibold text-slate-800">
           Category breakdown
         </h2>
+        <p className="text-xs text-slate-500 mt-0.5">
+        Predicted next month uses weighted moving average — recent months weighted higher
+        </p>
         <table className="mt-3 w-full text-left text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-xs font-medium uppercase tracking-wide text-slate-500">
               <th className="py-2">Category</th>
               <th className="py-2 text-right">Items</th>
               <th className="py-2 text-right">Total</th>
+              <th className="py-2 text-right">Predicted Next Month
+                <div className="text-slate-400 normal-case font-normal tracking-normal">(based on monthly avg)</div>
+              </th>
             </tr>
           </thead>
           <tbody>
             {byCategory.length === 0 ? (
               <tr>
-                <td colSpan={3} className="py-6 text-center text-slate-400">
+                <td colSpan={4} className="py-6 text-center text-slate-400">
                   No data yet.
                 </td>
               </tr>
@@ -128,6 +154,9 @@ export default function Analytics() {
                   <td className="py-2 text-right text-slate-600">{c.count}</td>
                   <td className="py-2 text-right font-semibold text-brand-600">
                     ${c.total.toFixed(2)}
+                  </td>
+                  <td className="py-2 text-right font-semibold text-emerald-600">
+                  ~${(predictions[c.category] ?? 0).toFixed(2)}
                   </td>
                 </tr>
               ))

@@ -264,7 +264,6 @@ function ActivitiesTab() {
   const [error, setError] = useState<string | null>(null);
 
   const [emailInput, setEmailInput] = useState("");
-  const [appliedEmail, setAppliedEmail] = useState("");
   const [actionFilter, setActionFilter] = useState("");
   const emailRef = useRef<HTMLInputElement>(null);
 
@@ -294,23 +293,20 @@ function ActivitiesTab() {
     fetchActivities();
   }, [fetchActivities]);
 
-  function applyFilter() {
-    setAppliedEmail(emailInput);
+  useEffect(() => {
     fetchActivities({
       user_email: emailInput || undefined,
-      action: actionFilter || undefined,
+      action: actionFilter || undefined, 
     });
-  }
+  }, [emailInput, actionFilter, fetchActivities]);
 
   function clearFilter() {
     setEmailInput("");
-    setAppliedEmail("");
     setActionFilter("");
-    fetchActivities();
     emailRef.current?.focus();
   }
 
-  const hasActiveFilter = appliedEmail !== "" || actionFilter !== "";
+  const hasActiveFilter = emailInput !== "" || actionFilter !== "";
 
   return (
     <div className="space-y-4">
@@ -323,7 +319,6 @@ function ActivitiesTab() {
             placeholder="alice@example.com"
             value={emailInput}
             onChange={(e) => setEmailInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && applyFilter()}
           />
         </div>
 
@@ -340,10 +335,7 @@ function ActivitiesTab() {
             <option value="logout">logout</option>
           </select>
         </div>
-
-        <button className="btn-primary" onClick={applyFilter}>
-          Filter
-        </button>
+    
 
         {hasActiveFilter && (
           <button className="btn-ghost" onClick={clearFilter}>
