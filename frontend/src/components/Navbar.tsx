@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import {Link, NavLink, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { api } from "../api/client";
 import { useAuthStore } from "../stores/auth";
@@ -46,10 +46,10 @@ export default function Navbar() {
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-600">
+          <Link to="/profile" className="text-sm text-slate-600 hover:underline cursor-pointer">
             Hi, <span className="font-medium text-slate-800">{user?.username}</span>
             {user?.is_admin && <span className="ml-2 badge bg-amber-100 text-amber-700">admin</span>}
-          </span>
+          </Link>
           <button onClick={handleLogout} className="btn-ghost">
             Sign out
           </button>

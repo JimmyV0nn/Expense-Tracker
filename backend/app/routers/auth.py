@@ -7,6 +7,8 @@ from ..database import get_db
 from ..models import User
 from ..models.activity import UserActivity
 from ..schemas.user import Token, UserCreate, UserLogin, UserOut
+from ..schemas.user import UserOut, UserUpdate
+from ..schemas.user import Token, UserCreate, UserLogin, UserOut, ProfileUpdate
 
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -72,4 +74,56 @@ def logout(
 
 @router.get("/me", response_model=UserOut)
 def me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@router.patch("/me", response_model=UserOut)
+def update_me(
+    payload: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    updates = payload.model_dump(exclude_unset=True)
+    
+    if "username" in updates and updates["username"] != current_user.username:
+        if db.query(User).filter(User.username == updates["username"]).first():
+            raise HTTPException(status_code=400, detail="Username already taken")
+    
+    if "email" in updates and updates["email"] != current_user.email:
+        if db.query(User).filter(User.email == updates["email"]).first():
+            raise HTTPException(status_code=400, detail="Email already in use")
+    
+    if "password" in updates:
+        updates["hashed_password"] = hash_password(updates.pop("password"))
+    
+    for field, value in updates.items():
+        setattr(current_user, field, value)
+    
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+@router.patch("/me", response_model=UserOut)
+def update_me(
+    payload: ProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    updates = payload.model_dump(exclude_unset=True)
+
+    if "username" in updates and updates["username"] != current_user.username:
+        if db.query(User).filter(User.username == updates["username"]).first():
+            raise HTTPException(status_code=400, detail="Username already taken")
+
+    if "email" in updates and updates["email"] != current_user.email:
+        if db.query(User).filter(User.email == updates["email"]).first():
+            raise HTTPException(status_code=400, detail="Email already in use")
+
+    if "password" in updates:
+        updates["hashed_password"] = hash_password(updates.pop("password"))
+
+    for field, value in updates.items():
+        setattr(current_user, field, value)
+
+    db.commit()
+    db.refresh(current_user)
     return current_user

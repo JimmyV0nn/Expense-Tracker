@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Expenses from "./pages/Expenses";
 import Analytics from "./pages/Analytics";
 import Admin from "./pages/Admin";
+import Profile from "./pages/Profile";
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<ProtectedRoute adminOnly />}>
             <Route index element={<Admin />} />
           </Route>
@@ -26,6 +28,7 @@ export default function App() {
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   );
 }

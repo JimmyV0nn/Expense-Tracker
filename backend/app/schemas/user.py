@@ -46,3 +46,14 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserOut
+
+
+class ProfileUpdate(BaseModel):
+    username: str | None = Field(default=None, min_length=3, max_length=50)
+    email: EmailStr | None = None
+    password: str | None = Field(default=None, min_length=6, max_length=128)
+
+    @field_validator("email")
+    @classmethod
+    def normalise_email(cls, v: str | None) -> str | None:
+        return v.strip().lower() if v else v
