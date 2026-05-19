@@ -69,7 +69,6 @@ def run() -> None:
         laura = User(username="laura", email="laura@example.com", hashed_password=hash_password("laura1234"))
         michael = User(username="michael", email="michael@example.com", hashed_password=hash_password("michael1234"))
         db.add_all([admin, demo, alice, bob, charlie, diana, evan, fiona, george, hannah, ivan, julia, kevin, laura, michael])
-        db.add_all([admin, demo])
         db.commit()
         db.refresh(admin)
         db.refresh(demo)
