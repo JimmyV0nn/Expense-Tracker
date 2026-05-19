@@ -16,7 +16,7 @@ uses FastAPI with SQLAlchemy on top of SQLite (the db file lives at
 
 You need Python 3.11+ and Node.js 18+.
 
-Backend:
+Backend (Windows):
 
 ```
 cd backend
@@ -24,6 +24,18 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.example .env
+python -m app.seed
+uvicorn app.main:app --reload
+```
+
+Backend (macOS/Linux):
+
+```
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
 python -m app.seed
 uvicorn app.main:app --reload
 ```
@@ -83,7 +95,8 @@ delete the db and re-seed:
 
 ```
 cd backend
-del expense_tracker.db          # macOS/Linux: rm expense_tracker.db
+del expense_tracker.db          # Windows
+rm expense_tracker.db           # macOS/Linux
 python -m app.seed
 ```
 
@@ -95,6 +108,8 @@ go to Application -> Local Storage -> http://localhost:5173, delete the
 
 **Port 8000 or 5173 is already in use.**
 
-A previous run didn't shut down cleanly. On Windows kill the orphan with
-`Get-Process python | Stop-Process` (or `Get-Process node | Stop-Process`
-for Vite), then start again.
+A previous run didn't shut down cleanly. Kill the orphan process and start
+again:
+
+- Windows: `Get-Process python | Stop-Process` (or `Get-Process node | Stop-Process` for Vite)
+- macOS/Linux: `lsof -ti:8000 | xargs kill` (or port `5173` for Vite)
